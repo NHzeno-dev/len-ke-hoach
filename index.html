@@ -44,6 +44,7 @@
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             padding: 30px;
+            position: relative;
         }
 
         header h1 {
@@ -124,14 +125,8 @@
             overflow-y: auto;
         }
 
-        /* Tùy chỉnh thanh cuộn */
-        .todo-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        .todo-list::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
-        }
+        .todo-list::-webkit-scrollbar { width: 6px; }
+        .todo-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
         .todo-item {
             display: flex;
@@ -146,9 +141,7 @@
             animation: fadeIn 0.3s ease-in-out;
         }
 
-        .todo-item:hover {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
+        .todo-item:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -186,11 +179,7 @@
             color: var(--text-light);
         }
 
-        .task-text {
-            font-size: 15px;
-            word-break: break-word;
-            transition: color 0.3s;
-        }
+        .task-text { font-size: 15px; word-break: break-word; }
 
         .delete-btn {
             background: none;
@@ -202,8 +191,37 @@
             transition: color 0.3s;
         }
 
-        .delete-btn:hover {
-            color: var(--danger);
+        .delete-btn:hover { color: var(--danger); }
+
+        /* Style cho thông báo (Toast) */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .toast {
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 1.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-20px); }
         }
 
         .empty-state {
@@ -212,23 +230,20 @@
             padding: 20px 0;
             display: none;
         }
-        
-        .empty-state i {
-            font-size: 40px;
-            margin-bottom: 10px;
-            color: #cbd5e1;
-        }
+        .empty-state i { font-size: 40px; margin-bottom: 10px; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
+    <div id="toast-container"></div>
+
     <div class="container">
         <header>
-            <h1><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Kế hoạch việc cần làm</h1>
+            <h1><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Kế hoạch của tôi</h1>
         </header>
 
         <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Thêm việc mới (nhấn Enter)...">
+            <input type="text" id="taskInput" placeholder="Thêm việc mới...">
             <button id="addBtn"><i class="fa-solid fa-plus"></i></button>
         </div>
 
@@ -240,15 +255,13 @@
 
         <div class="empty-state" id="emptyState">
             <i class="fa-regular fa-clipboard"></i>
-            <p>Tuyệt vời! Bạn không còn việc nào tồn đọng.</p>
+            <p>Không có công việc nào!</p>
         </div>
 
-        <ul class="todo-list" id="todoList">
-            </ul>
+        <ul class="todo-list" id="todoList"></ul>
     </div>
 
     <script>
-        // Lấy dữ liệu từ LocalStorage hoặc tạo mảng rỗng
         let todos = JSON.parse(localStorage.getItem('todos')) || [];
         let currentFilter = 'all';
 
@@ -257,87 +270,79 @@
         const todoList = document.getElementById('todoList');
         const emptyState = document.getElementById('emptyState');
         const filterBtns = document.querySelectorAll('.filter-btn');
+        const toastContainer = document.getElementById('toast-container');
 
-        // Hàm lưu dữ liệu
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
         function saveTodos() {
             localStorage.setItem('todos', JSON.stringify(todos));
         }
 
-        // Hàm render giao diện
         function renderTodos() {
             todoList.innerHTML = '';
-            
             let filteredTodos = todos;
-            if (currentFilter === 'active') {
-                filteredTodos = todos.filter(todo => !todo.completed);
-            } else if (currentFilter === 'completed') {
-                filteredTodos = todos.filter(todo => todo.completed);
-            }
+            if (currentFilter === 'active') filteredTodos = todos.filter(t => !t.completed);
+            if (currentFilter === 'completed') filteredTodos = todos.filter(t => t.completed);
 
             if (filteredTodos.length === 0) {
                 emptyState.style.display = 'block';
             } else {
                 emptyState.style.display = 'none';
-                filteredTodos.forEach((todo, index) => {
-                    // Lấy vị trí thật của todo trong mảng gốc để toggle/delete chính xác
+                filteredTodos.forEach((todo) => {
                     const realIndex = todos.findIndex(t => t.id === todo.id);
-
                     const li = document.createElement('li');
                     li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
                     li.innerHTML = `
                         <div class="todo-content" onclick="toggleComplete(${realIndex})">
-                            <div class="checkbox">
-                                <i class="fa-solid fa-check" style="font-size: 12px;"></i>
-                            </div>
+                            <div class="checkbox"><i class="fa-solid fa-check" style="font-size: 12px;"></i></div>
                             <span class="task-text">${todo.text}</span>
                         </div>
-                        <button class="delete-btn" onclick="deleteTask(${realIndex})">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <button class="delete-btn" onclick="deleteTask(${realIndex})"><i class="fa-solid fa-trash-can"></i></button>
                     `;
                     todoList.appendChild(li);
                 });
             }
         }
 
-        // Hàm thêm công việc
         function addTask() {
             const text = taskInput.value.trim();
             if (text !== '') {
-                todos.push({
-                    id: Date.now(), // Tạo ID độc nhất
-                    text: text,
-                    completed: false
-                });
+                todos.push({ id: Date.now(), text: text, completed: false });
                 taskInput.value = '';
                 saveTodos();
                 renderTodos();
             }
         }
 
-        // Hàm đánh dấu hoàn thành
         function toggleComplete(index) {
             todos[index].completed = !todos[index].completed;
+            
+            // Nếu vừa đánh dấu hoàn thành (từ false sang true) thì hiện thông báo
+            if (todos[index].completed) {
+                showToast("Chúc mừng! Bạn đã hoàn thành công việc.");
+            }
+
             saveTodos();
             renderTodos();
         }
 
-        // Hàm xóa công việc
         function deleteTask(index) {
             todos.splice(index, 1);
             saveTodos();
             renderTodos();
         }
 
-        // Lắng nghe sự kiện thêm
         addBtn.addEventListener('click', addTask);
-        taskInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addTask();
-            }
-        });
-
-        // Lắng nghe sự kiện bộ lọc
+        taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 filterBtns.forEach(b => b.classList.remove('active'));
@@ -347,7 +352,6 @@
             });
         });
 
-        // Chạy lần đầu
         renderTodos();
     </script>
 </body>
