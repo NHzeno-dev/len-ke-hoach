@@ -3,356 +3,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kế hoạch của tôi</title>
+    <title>Kế hoạch Pro - Ultimate Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
+            /* Theme Tối (Mặc định) */
             --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --border: #e5e7eb;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --bg: #0f172a;
+            --container-bg: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.12);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: rgba(0, 0, 0, 0.2);
+            --item-bg: rgba(255, 255, 255, 0.03);
             --success: #10b981;
+            --accent: #f43f5e;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+        [data-theme="light"] {
+            /* Theme Sáng */
+            --bg: #f1f5f9;
+            --container-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-dim: #64748b;
+            --input-bg: #f8fafc;
+            --item-bg: #f8fafc;
+            --primary-glow: rgba(99, 102, 241, 0.2);
         }
 
-        body {
-            background: linear-gradient(135deg, #e0e7ff 0%, #ede9fe 100%);
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.4s, color 0.4s; }
+
+        body { background: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; overflow: hidden; }
+
+        /* --- THÔNG BÁO THÀNH CÔNG (TOAST) --- */
+        #successToast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--success); color: white; padding: 12px 25px; border-radius: 50px;
+            font-weight: 700; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            z-index: 4000; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; gap: 10px; opacity: 0;
+        }
+        #successToast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* --- NÂNG CẤP NÚT BẤM (BUTTONS) --- */
+        .login-btn, #addBtn, .filter-btn, .delete-btn, .theme-toggle {
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none; position: relative; overflow: hidden;
         }
 
-        .container {
-            background: var(--surface);
-            width: 100%;
-            max-width: 480px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            padding: 30px;
-            position: relative;
+        .login-btn, #addBtn {
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white; border: none; font-weight: 700;
+            box-shadow: 0 4px 15px var(--primary-glow);
         }
 
-        header h1 {
-            font-size: 24px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
+        .login-btn:hover, #addBtn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px var(--primary-glow); }
+        .login-btn:active, #addBtn:active { transform: translateY(0) scale(0.95); }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        /* Nút chỉnh sáng tối */
+        .theme-toggle {
+            position: fixed; top: 25px; right: 25px; width: 45px; height: 45px; border-radius: 14px;
+            background: var(--container-bg); border: 1px solid var(--border); color: var(--text-main);
+            display: flex; align-items: center; justify-content: center; z-index: 3000;
         }
+        .theme-toggle:hover { transform: rotate(15deg) scale(1.1); border-color: var(--primary); }
 
-        .input-group input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary);
-        }
-
-        .input-group button {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .input-group button:hover {
-            background: var(--primary-hover);
-        }
-
-        .filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
-        }
-
+        /* Nút Filter */
         .filter-btn {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 8px;
-            transition: all 0.3s;
+            flex: 1; padding: 10px; border-radius: 12px; background: var(--item-bg);
+            border: 1px solid var(--border); color: var(--text-dim); font-weight: 700; font-size: 12px;
         }
+        .filter-btn.active { background: var(--primary); color: white; border-color: transparent; box-shadow: 0 5px 15px var(--primary-glow); }
 
-        .filter-btn.active {
-            background: var(--bg);
-            color: var(--primary);
-        }
-
-        .todo-list {
-            list-style: none;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .todo-list::-webkit-scrollbar { width: 6px; }
-        .todo-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-
-        .todo-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 15px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            transition: all 0.3s;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .todo-item:hover { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .todo-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-            cursor: pointer;
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: transparent;
-            transition: all 0.2s;
-        }
-
-        .todo-item.completed .checkbox {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .todo-item.completed .task-text {
-            text-decoration: line-through;
-            color: var(--text-light);
-        }
-
-        .task-text { font-size: 15px; word-break: break-word; }
-
+        /* Nút Xóa */
         .delete-btn {
-            background: none;
-            border: none;
-            color: var(--text-light);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 5px;
-            transition: color 0.3s;
+            background: rgba(244, 63, 94, 0.1); color: var(--accent); border: none;
+            width: 35px; height: 35px; border-radius: 10px;
         }
+        .delete-btn:hover { background: var(--accent); color: white; transform: rotate(10deg) scale(1.1); }
 
-        .delete-btn:hover { color: var(--danger); }
+        /* --- GIAO DIỆN --- */
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .login-card { background: var(--container-bg); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
+        .login-input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text-main); outline: none; }
 
-        /* Style cho thông báo (Toast) */
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
+        #mainApp { display: none; width: 100%; max-width: 480px; }
+        .container { background: var(--container-bg); backdrop-filter: blur(25px); border-radius: 30px; border: 1px solid var(--border); padding: 30px; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.1); }
+        
+        .input-group { display: flex; background: var(--input-bg); border-radius: 18px; padding: 7px; border: 2px solid var(--border); margin-bottom: 25px; transition: 0.3s; }
+        .input-group:focus-within { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-glow); }
+        .input-group input { flex: 1; background: transparent; border: none; padding: 12px; color: var(--text-main); outline: none; user-select: text !important; }
 
-        .toast {
-            background: #10b981;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 1.5s forwards;
-        }
+        .todo-item { background: var(--item-bg); border: 1px solid var(--border); border-radius: 18px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .checkbox { width: 22px; height: 22px; border: 2px solid var(--text-dim); border-radius: 7px; margin-right: 12px; display: flex; align-items: center; justify-content: center; }
+        .completed .checkbox { background: var(--success); border-color: var(--success); color: white; }
+        .completed .task-text { text-decoration: line-through; opacity: 0.5; }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        .logout-btn { position: absolute; top: -50px; left: 0; background: none; border: none; color: var(--text-dim); cursor: pointer; font-weight: 600; }
+        .logout-btn:hover { color: var(--accent); }
 
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateY(-20px); }
-        }
-
-        .empty-state {
-            text-align: center;
-            color: var(--text-light);
-            padding: 20px 0;
-            display: none;
-        }
-        .empty-state i { font-size: 40px; margin-bottom: 10px; color: #cbd5e1; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
     </style>
 </head>
-<body>
+<body data-theme="dark">
 
-    <div id="toast-container"></div>
+    <div id="successToast"><i class="fa-solid fa-circle-check"></i> Mục tiêu của bạn đã Hoàn Thành!</div>
 
-    <div class="container">
-        <header>
-            <h1><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Kế hoạch của tôi</h1>
-        </header>
+    <button class="theme-toggle" id="themeBtn" title="Chỉnh sáng/tối"><i class="fa-solid fa-moon"></i></button>
 
-        <div class="input-group">
-            <input type="text" id="taskInput" placeholder="Thêm việc mới...">
-            <button id="addBtn"><i class="fa-solid fa-plus"></i></button>
+    <div id="loginOverlay">
+        <div class="login-card">
+            <i class="fa-solid fa-user-shield" style="font-size: 50px; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2 id="authTitle">Kế Hoạch Pro</h2>
+            <p style="color: var(--text-dim); font-size: 13px; margin: 10px 0 20px;">Đăng nhập để lưu kế hoạch riêng của bạn</p>
+            <input type="text" id="userInp" class="login-input" placeholder="Tên tài khoản...">
+            <input type="password" id="passInp" class="login-input" placeholder="Mật khẩu...">
+            <button class="login-btn" style="width: 100%; padding: 15px; border-radius: 15px; margin-top: 10px;" onclick="handleAuth()" id="primaryAuthBtn">XÁC NHẬN</button>
+            <div style="margin-top: 20px; font-size: 13px;">
+                <span id="switchText">Chưa có tài khoản?</span> 
+                <a href="javascript:void(0)" onclick="toggleAuthMode()" id="switchBtn" style="color: var(--primary); font-weight: 700; text-decoration: none;">Đăng ký ngay</a>
+            </div>
+            <p id="loginErr" style="color: var(--accent); font-size: 12px; margin-top: 15px; display: none;"></p>
         </div>
+    </div>
 
-        <div class="filters">
-            <button class="filter-btn active" data-filter="all">Tất cả</button>
-            <button class="filter-btn" data-filter="active">Đang làm</button>
-            <button class="filter-btn" data-filter="completed">Đã xong</button>
+    <div id="mainApp">
+        <div class="container">
+            <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
+            <header style="text-align: center; margin-bottom: 25px;">
+                <h1 id="welcomeTitle" style="font-weight: 800; letter-spacing: -1px;">Xin chào!</h1>
+            </header>
+
+            <div class="input-group">
+                <input type="text" id="taskInput" placeholder="Hôm nay bạn muốn làm gì?" autocomplete="off">
+                <button id="addBtn" style="width: 46px; height: 46px; border-radius: 14px;"><i class="fa-solid fa-plus"></i></button>
+            </div>
+
+            <div class="filters" style="display: flex; gap: 8px; margin-bottom: 20px;">
+                <button class="filter-btn active" data-filter="all">Tất cả</button>
+                <button class="filter-btn" data-filter="active">Đang làm</button>
+                <button class="filter-btn" data-filter="completed">Đã xong</button>
+            </div>
+
+            <ul id="todoList" style="list-style: none;"></ul>
         </div>
-
-        <div class="empty-state" id="emptyState">
-            <i class="fa-regular fa-clipboard"></i>
-            <p>Không có công việc nào!</p>
-        </div>
-
-        <ul class="todo-list" id="todoList"></ul>
     </div>
 
     <script>
-        let todos = JSON.parse(localStorage.getItem('todos')) || [];
-        let currentFilter = 'all';
+        // 1. THEME ENGINE
+        const themeBtn = document.getElementById('themeBtn');
+        themeBtn.onclick = () => {
+            const current = document.body.getAttribute('data-theme');
+            const target = current === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', target);
+            themeBtn.innerHTML = target === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+            localStorage.setItem('todo-theme', target);
+        };
+        // Load theme cũ
+        const savedTheme = localStorage.getItem('todo-theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+        themeBtn.innerHTML = savedTheme === 'dark' ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
 
+        // 2. AUTH SYSTEM
+        let isRegisterMode = false;
+        let users = JSON.parse(localStorage.getItem('app_users')) || [];
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('authTitle').innerText = isRegisterMode ? "Đăng Ký" : "Kế Hoạch Pro";
+            document.getElementById('primaryAuthBtn').innerText = isRegisterMode ? "TẠO TÀI KHOẢN" : "XÁC NHẬN";
+            document.getElementById('switchBtn').innerText = isRegisterMode ? "Đăng nhập" : "Đăng ký ngay";
+            document.getElementById('loginErr').style.display = 'none';
+        }
+
+        function handleAuth() {
+            const u = document.getElementById('userInp').value.trim();
+            const p = document.getElementById('passInp').value.trim();
+            if (!u || !p) return;
+
+            if (isRegisterMode) {
+                if (users.some(x => x.username === u)) {
+                    showError("Tài khoản đã tồn tại!");
+                } else {
+                    users.push({ username: u, password: btoa(p) });
+                    localStorage.setItem('app_users', JSON.stringify(users));
+                    alert("Đăng ký thành công! Hãy đăng nhập.");
+                    toggleAuthMode();
+                }
+            } else {
+                const user = users.find(x => x.username === u && x.password === btoa(p));
+                if (user) {
+                    localStorage.setItem('isLogged', 'true');
+                    localStorage.setItem('currentUser', u);
+                    initApp();
+                } else {
+                    showError("Sai tài khoản hoặc mật khẩu!");
+                }
+            }
+        }
+
+        function showError(msg) {
+            const err = document.getElementById('loginErr');
+            err.innerText = msg; err.style.display = 'block';
+            document.querySelector('.login-card').style.animation = 'shake 0.3s';
+            setTimeout(() => document.querySelector('.login-card').style.animation = '', 300);
+        }
+
+        function logout() { localStorage.removeItem('isLogged'); location.reload(); }
+
+        // 3. TODO LOGIC
+        let todos = [];
+        let currentFilter = 'all';
         const taskInput = document.getElementById('taskInput');
         const addBtn = document.getElementById('addBtn');
-        const todoList = document.getElementById('todoList');
-        const emptyState = document.getElementById('emptyState');
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const toastContainer = document.getElementById('toast-container');
 
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
-            toastContainer.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.remove();
-            }, 2000);
-        }
-
-        function saveTodos() {
-            localStorage.setItem('todos', JSON.stringify(todos));
-        }
-
-        function renderTodos() {
-            todoList.innerHTML = '';
-            let filteredTodos = todos;
-            if (currentFilter === 'active') filteredTodos = todos.filter(t => !t.completed);
-            if (currentFilter === 'completed') filteredTodos = todos.filter(t => t.completed);
-
-            if (filteredTodos.length === 0) {
-                emptyState.style.display = 'block';
+        // Hiệu ứng nút Add khi gõ chữ
+        taskInput.oninput = (e) => {
+            if (e.target.value.trim().length > 0) {
+                addBtn.style.transform = 'rotate(90deg) scale(1.1)';
+                addBtn.style.background = 'var(--success)';
             } else {
-                emptyState.style.display = 'none';
-                filteredTodos.forEach((todo) => {
-                    const realIndex = todos.findIndex(t => t.id === todo.id);
-                    const li = document.createElement('li');
-                    li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-                    li.innerHTML = `
-                        <div class="todo-content" onclick="toggleComplete(${realIndex})">
-                            <div class="checkbox"><i class="fa-solid fa-check" style="font-size: 12px;"></i></div>
-                            <span class="task-text">${todo.text}</span>
-                        </div>
-                        <button class="delete-btn" onclick="deleteTask(${realIndex})"><i class="fa-solid fa-trash-can"></i></button>
-                    `;
-                    todoList.appendChild(li);
-                });
+                addBtn.style.transform = 'rotate(0deg) scale(1)';
+                addBtn.style.background = 'linear-gradient(135deg, var(--primary), #4f46e5)';
             }
-        }
+        };
 
         function addTask() {
-            const text = taskInput.value.trim();
-            if (text !== '') {
-                todos.push({ id: Date.now(), text: text, completed: false });
-                taskInput.value = '';
-                saveTodos();
-                renderTodos();
-            }
+            const val = taskInput.value.trim();
+            if (!val) return;
+            todos.unshift({ id: Date.now(), text: val, completed: false });
+            taskInput.value = '';
+            addBtn.style.transform = 'rotate(0deg) scale(1)';
+            addBtn.style.background = 'linear-gradient(135deg, var(--primary), #4f46e5)';
+            save();
         }
 
-        function toggleComplete(index) {
-            todos[index].completed = !todos[index].completed;
+        function toggleComplete(id) {
+            const todo = todos.find(t => t.id === id);
+            todo.completed = !todo.completed;
             
-            // Nếu vừa đánh dấu hoàn thành (từ false sang true) thì hiện thông báo
-            if (todos[index].completed) {
-                showToast("Chúc mừng! Bạn đã hoàn thành công việc.");
+            if (todo.completed) {
+                const toast = document.getElementById('successToast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
             }
-
-            saveTodos();
-            renderTodos();
+            save();
         }
 
-        function deleteTask(index) {
-            todos.splice(index, 1);
-            saveTodos();
-            renderTodos();
+        function deleteTask(id) { todos = todos.filter(t => t.id !== id); save(); }
+
+        function save() {
+            localStorage.setItem(`todos_${localStorage.getItem('currentUser')}`, JSON.stringify(todos));
+            render();
         }
 
-        addBtn.addEventListener('click', addTask);
-        taskInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') addTask(); });
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
+        function render() {
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+            todos.filter(t => {
+                if (currentFilter === 'active') return !t.completed;
+                if (currentFilter === 'completed') return t.completed;
+                return true;
+            }).forEach(t => {
+                const li = document.createElement('li');
+                li.className = `todo-item ${t.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <div style="display:flex; align-items:center; flex:1; cursor:pointer;" onclick="toggleComplete(${t.id})">
+                        <div class="checkbox">${t.completed ? '✓' : ''}</div>
+                        <span class="task-text">${t.text}</span>
+                    </div>
+                    <button class="delete-btn" onclick="event.stopPropagation(); deleteTask(${t.id})"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function initApp() {
+            if (localStorage.getItem('isLogged') === 'true') {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                const user = localStorage.getItem('currentUser');
+                document.getElementById('welcomeTitle').innerHTML = `Chào, <span style="color:var(--primary)">${user}</span>!`;
+                todos = JSON.parse(localStorage.getItem(`todos_${user}`)) || [];
+                render();
+            }
+        }
+
+        addBtn.onclick = addTask;
+        taskInput.onkeydown = (e) => { 
+            if(e.code === 'Space') e.stopPropagation();
+            if(e.key === 'Enter') addTask(); 
+        };
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 currentFilter = btn.dataset.filter;
-                renderTodos();
-            });
+                render();
+            };
         });
 
-        renderTodos();
+        initApp();
     </script>
 </body>
 </html>
